@@ -10,18 +10,11 @@ const dbName = 'ASM';
 const express = require('express');
 const app = express();
 var ExifImage = require('exif').ExifImage;
-var ddlat = 0;
-var ddlong = 0;
+var latdd = 0;
+var longdd = 0;
 var zoom = 18; 
 
-
-
-
-
-
-
-
-
+ 
 
 const server = http.createServer((req, res) => {
   let timestamp = new Date().toISOString();
@@ -101,7 +94,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, {"Content-Type": "text/html"});			
         res.write('<html><head><title>Photos</title></head>');
         res.write('<body><H1>Photos</H1>');
-        res.write('<H2>Showing '+photos.length+' photo(s)</H2>');
+        res.write('<H2>Showing '+photos.length+' document(s)</H2>');
         res.write('<ol>');
         for (i in photos) {
           res.write('<li><a href=/display?_id='+
@@ -148,23 +141,36 @@ const server = http.createServer((req, res) => {
         console.log(create);
         var exifgps = exifData.gps;
         var lat = exifgps.GPSLatitude;
-        var lad = lat[0];
-        var lam = lat[1];
+        var latd = lat[0];
+        var latm = lat[1];
         var lats = lat[2];
-         ddlat = lad + (lam/60) + (lats/3600);
+         latdd = latd + (latm/60) + (lats/3600);
         console.log(lat);
-        console.log(lad);
-        console.log(ddlat);
+        console.log(latd);
+        console.log(latdd);
         var long = exifgps.GPSLongitude;
         var longd = long[0];
         var longm = long[1];
         var longs = long[2];
-        ddlong = longd + (longm/60) + (longs/3600);
+        longdd = longd + (longm/60) + (longs/3600);
         console.log(long);
         console.log(longd);
-        console.log(ddlong);
+        console.log(longdd);
 
-      
+        /*
+        let image = new Buffer.from(photo[0].image,'base64');       
+        let contentType = {};
+        contentType['Content-Type'] = photo[0].mimetype;
+        console.log(contentType['Content-Type']);
+        if (contentType['Content-Type'] == "image/jpeg") {
+          console.log('Preparing to send ' + JSON.stringify(contentType));
+          res.writeHead(200, contentType);
+          res.end(image);
+        } else {
+          res.writeHead(500,{"Content-Type":"text/plain"});
+          res.end("Not JPEG format!!!");  
+        }
+        */
         res.writeHead(200, 'text/html');
         res.write('<html><head><style>img{max-width:30%;height:auto;max-height:30%;}</style></head><body>');
         if (photo[0].title) {
@@ -174,68 +180,48 @@ const server = http.createServer((req, res) => {
           res.write(`<html><body><center><h2>${photo[0].description}</h2></center>`);
         }
         res.write(`<center><img src="data:${photo[0].mimetype};base64, ${photo[0].image}"></center>`);
+        //res.write('<img src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub//ge8WSLf/rhf/3kdbW1mxsbP//mf///yH5BAAAAAAALAAAAAAQAA4AAARe8L1Ekyky67QZ1hLnjM5UUde0ECwLJoExKcppV0aCcGCmTIHEIUEqjgaORCMxIC6e0CcguWw6aFjsVMkkIr7g77ZKPJjPZqIyd7sJAgVGoEGv2xsBxqNgYPj/gAwXEQA7">');
         res.write(`<html><body><center><h2>Make:${make}</h2></center>`);
         res.write(`<html><body><center><h2>Model:${model}</h2></center>`);
         res.write(`<html><body><center><h2>Create:${create}</h2></center>`);
-        res.write(`<html><body><center><h2>Location:<a href="/Map">Map</a></h2></center>`);
-res.write('<script>');
-res.write(`showPosition();`);
-res.write('</script>');
+       // res.write(`<html><body><center><h2>Location:<a href='/lon=${longdd}&lat=${latdd}&zoom=${zoom}'>Map</a></h2></center>`);       
+        res.write(`<html><body><center><h2>Location:<a href='Map'>Map</a></h2></center>`);       
         res.end('</body></html>');
        })
       });
     });
-  }else if (parsedURL.pathname == '/Map'){
-        console.log(ddlat);
-        console.log(ddlong);
-        res.writeHead(200, 'paint/html');
-        res.write('<html><head><link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"');
-        res.write('integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="');
-	res.write('crossorigin=""/>');
-        res.write('<script> src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"'); 
-        res.write('integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="');
-        res.write('crossorigin=""> </script></head>');
-        res.write(`<body><div id = "map" style= "width: 900px; height:580px;"></div>`);
+  }else if (parsedURL.pathname =='/Map'){
+        console.log(latdd);
+        console.log(longdd);
+        res.writeHead(200, 'text/html');
+        res.write('<html><head><link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="">');
+        res.write('<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""> </script></head>');
+        res.write('<body><div id = "map" style= "width: 900px; height:580px;"></div>');
         res.write('<script>');
-        res.write(` var mapOptions = { center: [${ddlat},${ddlong}], zoom: ${zoom} } `);
-        res.write(`var map = new L.map('map', mapOptions);`);
-        res.write(`var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');`);
+        res.write(`var mapOptions = { center: [${latdd},${longdd}], zoom: ${zoom} }` );
+        res.write(`var map = new L.map("map", mapOptions)`);
+        res.write(`var layer = new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");`);
         res.write(`map.addLayer(layer);`);
-        res.write(`var marker = L.marker([${ddlat},${ddlong}]);`);
+        res.write(`var marker = L.marker([${latdd},${longdd}]);`);
         res.write(`marker.addTo(map);`);
-     
-res.write(`showPosition();`);
-
-
-
-res.write('</script>');
-        res.write('hi');
-res.write(`${ddlat}`);
-res.write(`${ddlong}`);
-res.write(`${zoom} `);
+        res.write('</script>');
+        res.write(`Latitude:${latdd}<br>`);
+        res.write(`Longitude:${longdd}<br>`);
         res.end('</body></html>');
 }
     else {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
     res.write('Title: <input type="text" name="title"><br>');
-    
+    //
     res.write('Description: <input type="text" name="description"><br>');
-    
+    //
     res.write('<input type="file" name="filetoupload"><br>');
     res.write('<input type="submit">');
     res.write('</form>');
     res.end();
   }
 });
-
-function showPosition() {
-  var latlon = ddlat + "," + ddlong;
-
-  var img_url = "https://maps.googleapis.com/maps/api/staticmap?center="+latlon+"&zoom=14&size=400x300&sensor=false&key=YOUR_KEY";
-
-  document.getElementById("mapholder").innerHTML = "<img src='"+img_url+"'>";
-}
 
 
 const insertPhoto = (db,r,callback) => {
@@ -253,7 +239,7 @@ const findPhoto = (db,criteria,callback) => {
   cursor.forEach((doc) => {
     photos.push(doc);
   }, (err) => {
- 
+    // done or error
     assert.equal(err,null);
     callback(photos);
   })
