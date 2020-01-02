@@ -6,7 +6,7 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const ObjectID = require('mongodb').ObjectID;
 const mongourl = 'mongodb+srv://rso:alpha8298@testtut3-ki0gi.mongodb.net/test?retryWrites=true&w=majority';
-const dbName = 'Individual';
+const dbName = 'ASM';
 const express = require('express');
 const app = express();
 var ExifImage = require('exif').ExifImage;
